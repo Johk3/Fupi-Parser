@@ -1,5 +1,6 @@
 # exclude everything
 logs/*
+.idea
 
 # exception to the rule
 !logs/readme.txt 
