@@ -1,0 +1,6 @@
+# excl
+ude everything
+logs/*
+
+# exception to the rule
+!logs/readme.txt 
