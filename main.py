@@ -1,6 +1,5 @@
 import os
 import datetime
-
 from src import parser
 
 files = os.listdir("logs")
@@ -11,6 +10,4 @@ for file in files:
         continue
     else:
         configured = parser.Parser("./logs/" + file, filename)
-        configured.mainip()
-
-
+        configured.parse()
