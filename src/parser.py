@@ -1,5 +1,6 @@
 # This parses the data and returns only the goods.
 import re
+from shlex import split
 
 
 class Parser(object):
@@ -7,6 +8,7 @@ class Parser(object):
     def __init__(self, logs, filename):
         self.file = open(str(logs), 'r')
         self.output = open(str(filename), 'w+')
+        self.check = 1
 
     def parse(self):
         for line in self.file:
@@ -25,10 +27,26 @@ class Parser(object):
 
         while line != "++++++++++++++FINISHED TEST!!!++++++++++++++++++++\n":
             line = self.file.readline()
+            segments = ((-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1),
+                        (-1, -1, -1, -1))
 
             if timestamp is None:
                 time_str = line[29:50]
-                timestamp = time_str[:12] + time_str[14:]
+                timestamp = time_str[:12] + time_str[12:]
+                timestamp = " ".join("" if x == "-" else x for x in split(timestamp))
             elif server_IP is None:
                 if "DEBUG isconnected(): connect() to" in line:
                     server_IP = re.findall(ip_address, line)[0]
@@ -43,11 +61,18 @@ class Parser(object):
             else:
                 segments = self.read_segments()
                 break
-
-        self.output.write("Dash test from %s  |  Server IP: %s  |  Server name: %s  |  Client IP: %s\n" %
-                          (timestamp, server_IP, server_name, client_IP))
+        if self.check == 1:
+            self.output.write("segment-number, segment-size, segment-rate, segment-speed, timestamp, server-ip, "
+                              "server-name, client-ip\n" )
+            self.check = 2
+        i = 1
         for seg in segments:
-            self.output.write("Segment number: %d, Size: %d bytes, Rate: %d kbit/s, Speed: %d kbit/s\n" % seg)
+            if i == 1:
+                self.output.write("%d,%d,%d,%d,{},{},{},{}\n".format(timestamp, server_IP, server_name, client_IP) % seg)
+                i = 2
+            else:
+                self.output.write("%d,%d,%d,%d\n" %seg)
+
         self.output.write("\n")
 
     def read_segments(self):
